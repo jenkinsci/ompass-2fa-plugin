@@ -1,0 +1,34 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:st="jelly:stapler"
+         xmlns:l="/lib/layout"
+         xmlns:f="/lib/form">
+
+  <l:layout title="OMPASS Two-Factor Authentication" norefresh="true">
+    <l:main-panel>
+
+      <div style="max-width: 480px; margin: 60px auto; text-align: center;">
+        <h1 style="margin-bottom: 8px;">OMPASS Two-Factor Authentication</h1>
+
+        <j:if test="${it.errorMessage != null}">
+          <div style="background: #fff0f0; border: 1px solid #cf222e; border-radius: 6px;
+                      padding: 12px 16px; margin: 16px 0; color: #cf222e; text-align: left;">
+            <strong>Error:</strong> ${it.errorMessage}
+          </div>
+        </j:if>
+
+        <div style="margin-top: 24px;">
+          <a href="${rootURL}/ompassAuth/" class="jenkins-button jenkins-button--primary"
+             style="padding: 8px 24px; font-size: 14px; text-decoration: none;">
+            Retry Authentication
+          </a>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <a href="${rootURL}/logout" style="color: #888; font-size: 13px;">Cancel and sign out</a>
+        </div>
+      </div>
+
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

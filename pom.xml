@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>4.71</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>io.jenkins.plugins</groupId>
+    <artifactId>ompass-2fa</artifactId>
+    <version>${revision}${changelist}</version>
+    <packaging>hpi</packaging>
+
+    <name>OMPASS 2FA Authentication</name>
+    <description>OMPASS-based two-factor authentication plugin for Jenkins</description>
+
+    <url>https://github.com/jenkinsci/ompass-2fa-plugin</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>ompasscloud</id>
+            <name>OMPASS Cloud</name>
+            <email>support@ompasscloud.com</email>
+            <organization>OMPASS Cloud</organization>
+            <organizationUrl>https://ompasscloud.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/jenkinsci/ompass-2fa-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/ompass-2fa-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/ompass-2fa-plugin</url>
+    </scm>
+
+    <properties>
+        <revision>1.0.0</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <jenkins.version>2.361.4</jenkins.version>
+        <enforcer.skip>true</enforcer.skip>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.361.x</artifactId>
+                <version>1723.vcb_9fee52c9fc</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- OMPASS Java SDK -->
+        <dependency>
+            <groupId>com.ompasscloud.sdk</groupId>
+            <artifactId>ompass-java-sdk</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <!-- OkHttp 4.x is written in Kotlin and requires the Kotlin runtime -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.9.22</version>
+        </dependency>
+
+        <!-- JSON processing -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>jenkins-test-harness</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>4.12.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+</project>

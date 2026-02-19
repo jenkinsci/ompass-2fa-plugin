@@ -1,0 +1,33 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:st="jelly:stapler"
+         xmlns:l="/lib/layout"
+         xmlns:f="/lib/form">
+
+  <f:entry title="OMPASS Two-Factor Authentication">
+    <j:choose>
+      <j:when test="${instance.ompassRegistered}">
+        <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 10px; height: 10px;
+                       background: #1a7f37; border-radius: 50%;"></span>
+          <span style="color: #1a7f37; font-weight: 500;">Registered</span>
+        </div>
+        <div style="color: #666; font-size: 12px; margin-top: 4px;">
+          Your account is enrolled in OMPASS two-factor authentication.
+        </div>
+      </j:when>
+      <j:otherwise>
+        <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 10px; height: 10px;
+                       background: #9a9a9a; border-radius: 50%;"></span>
+          <span style="color: #666; font-weight: 500;">Not Registered</span>
+        </div>
+        <div style="color: #666; font-size: 12px; margin-top: 4px;">
+          Your account is not yet enrolled in OMPASS two-factor authentication.
+          Registration will occur automatically during your next login when OMPASS 2FA is enabled.
+        </div>
+      </j:otherwise>
+    </j:choose>
+  </f:entry>
+
+</j:jelly>

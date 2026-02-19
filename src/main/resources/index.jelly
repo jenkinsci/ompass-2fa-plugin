@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Two-Factor Authentication for Jenkins using OMPASS.
+    Adds a second authentication step after primary login (LDAP, AD, Jenkins DB, etc.)
+    using the OMPASS mobile authenticator app.
+</div>

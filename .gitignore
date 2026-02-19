@@ -1,0 +1,15 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iml
+
+# Jenkins work directory (local development)
+work/
+
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
