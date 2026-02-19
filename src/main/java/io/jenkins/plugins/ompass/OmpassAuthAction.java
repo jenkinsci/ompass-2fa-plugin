@@ -8,11 +8,11 @@ import com.ompasscloud.sdk.model.response.AuthStartResponse;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +75,7 @@ public class OmpassAuthAction implements UnprotectedRootAction {
      * On success, redirects directly to the OMPASS authentication page.
      * On failure, sets an error message and forwards to the Jelly view.
      */
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         // Initialize per-request state
         this.ompassUrl = null;
         this.relayState = null;

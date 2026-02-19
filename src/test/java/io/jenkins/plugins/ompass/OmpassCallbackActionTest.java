@@ -97,8 +97,8 @@ public class OmpassCallbackActionTest {
         hudson.model.User mockUser = org.mockito.Mockito.mock(hudson.model.User.class);
         org.mockito.Mockito.when(mockUser.getId()).thenReturn("testuser");
 
-        javax.servlet.http.HttpSession mockSession =
-                org.mockito.Mockito.mock(javax.servlet.http.HttpSession.class);
+        jakarta.servlet.http.HttpSession mockSession =
+                org.mockito.Mockito.mock(jakarta.servlet.http.HttpSession.class);
         org.mockito.Mockito.when(mockSession.getAttribute("testuser_OMPASS_2FA_VERIFIED"))
                 .thenReturn(null);
 

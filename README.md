@@ -32,8 +32,8 @@ Before using this plugin, you need an OMPASS account with a configured applicati
 
 | Requirement     | Version          |
 |-----------------|------------------|
-| Jenkins         | 2.361.4 or later |
-| Java            | JDK 11 or later  |
+| Jenkins         | 2.541.1 or later |
+| Java            | JDK 17 or later  |
 | OMPASS Server   | OMPASS interface server with a configured application (Client ID and Secret Key) |
 
 ## Installation
@@ -138,23 +138,23 @@ To enable detailed logging for the OMPASS 2FA plugin:
 
 ### Prerequisites
 
-- **JDK 11** (required - builds fail on JDK 17+ due to Groovy compatibility issues)
+- **JDK 17** or later
 - Apache Maven 3.x
 
 ### Build
 
 ```bash
 # macOS (specify JDK 11)
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn clean package
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn clean package
 
 # Linux (if JDK 11 is the default)
 mvn clean package
 
 # Skip tests
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn clean package -DskipTests
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn clean package -DskipTests
 
 # Release build (remove SNAPSHOT)
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn clean package -Dchangelist=
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn clean package -Dchangelist=
 ```
 
 Build output: `target/ompass-2fa.hpi`
@@ -162,20 +162,20 @@ Build output: `target/ompass-2fa.hpi`
 ### Run tests
 
 ```bash
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn test
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn test
 ```
 
 ### Local development
 
 ```bash
 # Accessible from localhost only
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn hpi:run
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn hpi:run
 
 # Accessible from external IPs as well (e.g., 192.168.x.x)
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn hpi:run -Dhost=0.0.0.0
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn hpi:run -Dhost=0.0.0.0
 
 # Run without the /jenkins context path (root context)
-JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn hpi:run -Dprefix=/
+JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn hpi:run -Dprefix=/
 ```
 
 By default, Jenkins will be available at `http://localhost:8080/jenkins/`.
@@ -185,8 +185,7 @@ With `-Dprefix=/`, it will be available at `http://localhost:8080/`.
 
 | Jenkins Version | Compatibility |
 |---|---|
-| 2.361.4 ~ 2.462.x | Fully supported |
-| 2.463+ (jakarta.servlet) | Requires additional modifications |
+| 2.541.1 or later | Fully supported (jakarta.servlet) |
 
 ## Project Structure
 

@@ -5,11 +5,11 @@ import com.ompasscloud.sdk.model.request.TokenVerifyRequest;
 import com.ompasscloud.sdk.model.response.TokenVerifyResponse;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +75,7 @@ public class OmpassCallbackAction implements UnprotectedRootAction {
      * marks the session as 2FA-verified on success and redirects to the original page,
      * or displays an error page on failure.
      */
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         // Initialize per-request state
         this.success = false;
         this.errorMessage = null;

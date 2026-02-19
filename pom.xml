@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.71</version>
+        <version>6.2116.v7501b_67dc517</version>
         <relativePath/>
     </parent>
 
@@ -28,35 +28,29 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <id>ompasscloud</id>
-            <name>OMPASS Cloud</name>
-            <email>support@ompasscloud.com</email>
-            <organization>OMPASS Cloud</organization>
-            <organizationUrl>https://ompasscloud.com</organizationUrl>
-        </developer>
-    </developers>
-
     <scm>
         <connection>scm:git:https://github.com/jenkinsci/ompass-2fa-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/ompass-2fa-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/ompass-2fa-plugin</url>
+        <tag>${scmTag}</tag>
     </scm>
 
     <properties>
         <revision>1.0.0</revision>
-        <changelist>-SNAPSHOT</changelist>
-        <jenkins.version>2.361.4</jenkins.version>
-        <enforcer.skip>true</enforcer.skip>
+        <changelist>999999-SNAPSHOT</changelist>
+        <jenkins.baseline>2.541</jenkins.baseline>
+        <jenkins.version>${jenkins.baseline}.1</jenkins.version>
+        <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
+        <ban-commons-lang-2.skip>false</ban-commons-lang-2.skip>
+        <hpi.bundledArtifacts>annotations,jackson-annotations,jackson-core,jackson-databind,kotlin-stdlib,kotlin-stdlib-common,kotlin-stdlib-jdk7,kotlin-stdlib-jdk8,okhttp,okio,okio-jvm,ompass-java-sdk</hpi.bundledArtifacts>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.361.x</artifactId>
-                <version>1723.vcb_9fee52c9fc</version>
+                <artifactId>bom-${jenkins.baseline}.x</artifactId>
+                <version>6055.v35edb_dc8d0f9</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -77,12 +71,16 @@
             <artifactId>kotlin-stdlib</artifactId>
             <version>1.9.22</version>
         </dependency>
-
-        <!-- JSON processing -->
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20231013</version>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>1.9.22</version>
+        </dependency>
+
+        <!-- JSON processing (Jenkins API plugin wrapper) -->
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>json-api</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

@@ -9,12 +9,12 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
@@ -81,7 +81,7 @@ public class OmpassGlobalConfigView extends ManagementLink implements Describabl
      * Requires a POST request with administrator permissions and a valid CRUMB.
      */
     @RequirePOST
-    public void doSaveSettings(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doSaveSettings(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
@@ -113,7 +113,7 @@ public class OmpassGlobalConfigView extends ManagementLink implements Describabl
      * Returns a JSON response indicating success or failure.
      */
     @RequirePOST
-    public void doTestConnection(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doTestConnection(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("application/json;charset=UTF-8");
