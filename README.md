@@ -1,6 +1,18 @@
-# OMPASS 2FA Authentication Plugin for Jenkins
+<p align="center">
+  <img src="src/main/webapp/images/ompass-icon.png" alt="OMPASS" width="80" />
+</p>
+
+<h1 align="center">OMPASS 2FA Authentication Plugin for Jenkins</h1>
 
 A Jenkins plugin that adds OMPASS-based two-factor authentication (2FA) to your Jenkins instance. After users log in with their primary credentials, they are required to complete a second authentication step through the OMPASS platform before accessing Jenkins resources.
+
+## Getting Started
+
+Before using this plugin, you need an OMPASS account with a configured application (Client ID and Secret Key).
+
+1. Sign up at **[https://ompasscloud.com/en/](https://ompasscloud.com/en/)**.
+2. Create an application in the OMPASS portal to obtain your **Client ID** and **Secret Key**.
+3. Install and configure this plugin with those credentials (see [Configuration](#configuration)).
 
 ## Features
 
@@ -161,9 +173,13 @@ JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn hpi:run
 
 # Accessible from external IPs as well (e.g., 192.168.x.x)
 JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn hpi:run -Dhost=0.0.0.0
+
+# Run without the /jenkins context path (root context)
+JAVA_HOME=$(/usr/libexec/java_home -v 11) mvn hpi:run -Dprefix=/
 ```
 
-Jenkins will be available at `http://localhost:8080/jenkins/`.
+By default, Jenkins will be available at `http://localhost:8080/jenkins/`.
+With `-Dprefix=/`, it will be available at `http://localhost:8080/`.
 
 ### Jenkins Compatibility
 
