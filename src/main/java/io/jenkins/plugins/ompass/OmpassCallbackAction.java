@@ -4,6 +4,7 @@ import com.ompasscloud.sdk.OmpassClient;
 import com.ompasscloud.sdk.model.request.TokenVerifyRequest;
 import com.ompasscloud.sdk.model.response.TokenVerifyResponse;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.UnprotectedRootAction;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -124,18 +125,26 @@ public class OmpassCallbackAction implements UnprotectedRootAction {
                     && config.getClientId().equals(verifyResponse.getClientId());
 
             if (verified) {
-                HttpSession session = req.getSession(true);
-                session.setAttribute(this.username + OMPASS_2FA_VERIFIED_SUFFIX, Boolean.TRUE);
+                // Read relay state from the old session before invalidation
+                HttpSession oldSession = req.getSession(false);
+                String destination = null;
+                if (oldSession != null) {
+                    destination = (String) oldSession.getAttribute(RELAY_STATE_KEY);
+                    // Invalidate old session to prevent session fixation attacks
+                    oldSession.invalidate();
+                }
+
+                // Create a fresh session and mark 2FA as verified
+                HttpSession newSession = req.getSession(true);
+                newSession.setAttribute(this.username + OMPASS_2FA_VERIFIED_SUFFIX, Boolean.TRUE);
                 LOGGER.info("OMPASS 2FA verification succeeded for user: " + this.username);
 
-                // Retrieve the relay state (original request URL) from the session
-                String destination = (String) session.getAttribute(RELAY_STATE_KEY);
-                if (destination == null || destination.isEmpty()) {
+                // Validate redirect destination to prevent open redirect
+                if (destination == null || destination.isEmpty()
+                        || !Util.isSafeToRedirectTo(destination)) {
                     destination = req.getContextPath() + "/";
                 }
-                session.removeAttribute(RELAY_STATE_KEY);
 
-                // Redirect directly to the original page
                 rsp.sendRedirect(destination);
             } else {
                 LOGGER.warning("OMPASS 2FA verification failed for user: " + this.username

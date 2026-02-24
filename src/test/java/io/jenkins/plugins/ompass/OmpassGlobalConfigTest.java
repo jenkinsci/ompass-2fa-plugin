@@ -25,7 +25,7 @@ public class OmpassGlobalConfigTest {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull("Global config singleton must not be null", config);
 
-        assertFalse("enableOmpass2fa should default to false", config.getEnableOmpass2fa());
+        assertFalse("enableOmpass2fa should default to false", config.isEnableOmpass2fa());
         assertEquals("language should default to EN", "EN", config.getLanguage());
         assertEquals("ompassServerUrl should default to empty string", "", config.getOmpassServerUrl());
         assertEquals("clientId should default to empty string", "", config.getClientId());
@@ -56,7 +56,7 @@ public class OmpassGlobalConfigTest {
         assertEquals("test-client-id-123", reloaded.getClientId());
         assertNotNull("secretKey should be loaded", reloaded.getSecretKey());
         assertEquals("super-secret-key", reloaded.getSecretKey().getPlainText());
-        assertTrue("enableOmpass2fa should be true after reload", reloaded.getEnableOmpass2fa());
+        assertTrue("enableOmpass2fa should be true after reload", reloaded.isEnableOmpass2fa());
         assertEquals("KR", reloaded.getLanguage());
     }
 
@@ -120,12 +120,12 @@ public class OmpassGlobalConfigTest {
         // (secretKey is allowed to be null by design).
         assertNotNull("getOmpassServerUrl must not return null", config.getOmpassServerUrl());
         assertNotNull("getClientId must not return null", config.getClientId());
-        assertNotNull("getEnableOmpass2fa must not return null", config.getEnableOmpass2fa());
+        assertNotNull("isEnableOmpass2fa must not return null", config.isEnableOmpass2fa());
         assertNotNull("getLanguage must not return null", config.getLanguage());
 
         assertEquals("Default ompassServerUrl should be empty string", "", config.getOmpassServerUrl());
         assertEquals("Default clientId should be empty string", "", config.getClientId());
-        assertFalse("Default enableOmpass2fa should be false", config.getEnableOmpass2fa());
+        assertFalse("Default enableOmpass2fa should be false", config.isEnableOmpass2fa());
         assertEquals("Default language should be EN", "EN", config.getLanguage());
     }
 

@@ -111,7 +111,7 @@ public class OmpassFilter implements Filter {
             String requestUrl = httpRequest.getPathInfo();
             HttpSession session = httpRequest.getSession(false);
 
-            if (byPass2FA(currentUser, requestUrl, session)) {
+            if (byPass2FA(currentUser, requestUrl, session, httpRequest)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -121,8 +121,8 @@ public class OmpassFilter implements Filter {
                 session = httpRequest.getSession(true);
             }
 
-            // Preserve the request URL so the user can return to the original page after 2FA
-            String relayState = httpRequest.getRequestURL().toString();
+            // Preserve the request URI (relative path) so the user can return after 2FA
+            String relayState = httpRequest.getRequestURI();
             String queryString = httpRequest.getQueryString();
             if (queryString != null && !queryString.isEmpty()) {
                 relayState = relayState + "?" + queryString;
@@ -144,9 +144,10 @@ public class OmpassFilter implements Filter {
      * @param user    the currently authenticated Jenkins user, or null if anonymous
      * @param url     the request URI
      * @param session the HTTP session, or null if none exists
+     * @param request the HTTP request, used to check for API token authentication
      * @return true if the request should pass through without 2FA, false otherwise
      */
-    boolean byPass2FA(User user, String url, HttpSession session) {
+    boolean byPass2FA(User user, String url, HttpSession session, HttpServletRequest request) {
         // 1. Unauthenticated users do not require 2FA
         if (user == null) {
             return true;
@@ -154,7 +155,7 @@ public class OmpassFilter implements Filter {
 
         // 2. 2FA is globally disabled
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
-        if (config == null || !config.getEnableOmpass2fa()) {
+        if (config == null || !config.isEnableOmpass2fa()) {
             return true;
         }
 
@@ -172,13 +173,28 @@ public class OmpassFilter implements Filter {
             return true;
         }
 
-        // 5. System property for development/emergency bypass
+        // 5. API token (Basic auth) requests bypass 2FA
+        if (request != null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Basic ")) {
+                return true;
+            }
+        }
+
+        // 6. System property for development/emergency bypass
         String bypassProperty = System.getProperty("ompass.2fa.bypass");
         if ("true".equalsIgnoreCase(bypassProperty)) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Backward-compatible overload without request parameter.
+     */
+    boolean byPass2FA(User user, String url, HttpSession session) {
+        return byPass2FA(user, url, session, null);
     }
 
     /**

@@ -11,5 +11,8 @@ work/
 # Claude Code
 .claude/
 
+# Docs (internal)
+docs/
+
 # OS
 .DS_Store

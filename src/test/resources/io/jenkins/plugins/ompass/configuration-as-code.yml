@@ -1,0 +1,7 @@
+unclassified:
+  ompass-2fa:
+    enableOmpass2fa: true
+    ompassServerUrl: "https://ompass.example.com"
+    clientId: "test-client-id"
+    secretKey: "test-secret-key"
+    language: "EN"

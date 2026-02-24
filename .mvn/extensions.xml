@@ -5,4 +5,9 @@
         <artifactId>git-changelist-maven-extension</artifactId>
         <version>1.13</version>
     </extension>
+    <extension>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <version>3.1795.v6fb_496fc129b_</version>
+    </extension>
 </extensions>

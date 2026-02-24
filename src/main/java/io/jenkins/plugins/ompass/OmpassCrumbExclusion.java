@@ -28,7 +28,7 @@ public class OmpassCrumbExclusion extends CrumbExclusion {
     public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         String pathInfo = request.getPathInfo();
-        if (pathInfo != null && (pathInfo.contains(CALLBACK_PATH) || pathInfo.contains(CONFIG_PATH))) {
+        if (pathInfo != null && (pathInfo.startsWith(CALLBACK_PATH) || pathInfo.startsWith(CONFIG_PATH))) {
             LOGGER.fine("OMPASS crumb exclusion applied: " + pathInfo);
             chain.doFilter(request, response);
             return true;

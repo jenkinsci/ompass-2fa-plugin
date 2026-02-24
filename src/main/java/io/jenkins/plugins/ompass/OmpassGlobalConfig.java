@@ -1,15 +1,15 @@
 package io.jenkins.plugins.ompass;
 
 import hudson.Extension;
-import hudson.XmlFile;
+import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest2;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 /**
@@ -18,6 +18,7 @@ import java.util.logging.Logger;
  * Configuration is persisted to a custom XML file under the Jenkins plugin directory.
  */
 @Extension
+@Symbol("ompass-2fa")
 public class OmpassGlobalConfig extends GlobalConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(OmpassGlobalConfig.class.getName());
@@ -28,6 +29,7 @@ public class OmpassGlobalConfig extends GlobalConfiguration {
     private Boolean enableOmpass2fa;
     private String language;
 
+    @DataBoundConstructor
     public OmpassGlobalConfig() {
         load();
     }
@@ -39,18 +41,6 @@ public class OmpassGlobalConfig extends GlobalConfiguration {
      */
     public static OmpassGlobalConfig get() {
         return GlobalConfiguration.all().get(OmpassGlobalConfig.class);
-    }
-
-    @Override
-    protected XmlFile getConfigFile() {
-        File configDir = new File(Jenkins.get().getRootDir(), "plugins/ompass2faConfig");
-        if (!configDir.exists()) {
-            boolean created = configDir.mkdirs();
-            if (!created) {
-                LOGGER.warning("Failed to create configuration directory: " + configDir.getAbsolutePath());
-            }
-        }
-        return new XmlFile(new File(configDir, this.getId() + ".xml"));
     }
 
     @Override
@@ -74,12 +64,19 @@ public class OmpassGlobalConfig extends GlobalConfiguration {
         return secretKey;
     }
 
-    public Boolean getEnableOmpass2fa() {
+    public Boolean isEnableOmpass2fa() {
         return enableOmpass2fa != null ? enableOmpass2fa : Boolean.FALSE;
     }
 
     public String getLanguage() {
         return language != null ? language : "EN";
+    }
+
+    public ListBoxModel doFillLanguageItems() {
+        ListBoxModel items = new ListBoxModel();
+        items.add("English", "EN");
+        items.add("Korean", "KR");
+        return items;
     }
 
     // --- Setters with persistence ---

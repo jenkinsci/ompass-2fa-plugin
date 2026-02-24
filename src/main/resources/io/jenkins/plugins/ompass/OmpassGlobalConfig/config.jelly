@@ -1,0 +1,31 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form">
+
+  <f:optionalBlock title="Enable OMPASS 2FA" field="enableOmpass2fa"
+                   checked="${instance.enableOmpass2fa}"
+                   description="When enabled, users will be required to complete OMPASS two-factor authentication after their primary login.">
+
+    <f:entry title="OMPASS Server URL" field="ompassServerUrl"
+             description="The URL of your OMPASS interface server (e.g., https://ompass-interface.example.com).">
+      <f:textbox />
+    </f:entry>
+
+    <f:entry title="Client ID" field="clientId"
+             description="The Client ID provided by OMPASS for this application.">
+      <f:textbox />
+    </f:entry>
+
+    <f:entry title="Secret Key" field="secretKey"
+             description="The Secret Key provided by OMPASS for this application.">
+      <f:password />
+    </f:entry>
+
+    <f:entry title="Language" field="language"
+             description="The language used for OMPASS authentication prompts.">
+      <f:select />
+    </f:entry>
+
+  </f:optionalBlock>
+
+</j:jelly>

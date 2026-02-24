@@ -249,40 +249,38 @@ public class OmpassFilterTest {
 
     @Test
     public void testRelayStateConstruction() {
-        // Verify the relay state mechanism constructs the correct URL from
+        // Verify the relay state mechanism constructs the correct relative URI from
         // request attributes. This tests the logic used by the filter's
         // doFilter method for building relay state strings.
-        when(request.getRequestURL()).thenReturn(
-                new StringBuffer("http://localhost:8080/job/my-pipeline"));
+        when(request.getRequestURI()).thenReturn("/job/my-pipeline");
         when(request.getQueryString()).thenReturn("param=value");
 
-        String expectedRelayState = "http://localhost:8080/job/my-pipeline?param=value";
-        String requestUrl = request.getRequestURL().toString();
+        String expectedRelayState = "/job/my-pipeline?param=value";
+        String requestUri = request.getRequestURI();
         String queryString = request.getQueryString();
-        String relayState = requestUrl;
+        String relayState = requestUri;
         if (queryString != null && !queryString.isEmpty()) {
             relayState = relayState + "?" + queryString;
         }
 
-        assertEquals("Relay state should include URL and query string",
+        assertEquals("Relay state should include URI and query string",
                 expectedRelayState, relayState);
     }
 
     @Test
     public void testRelayStateWithoutQueryString() {
-        when(request.getRequestURL()).thenReturn(
-                new StringBuffer("http://localhost:8080/job/my-pipeline"));
+        when(request.getRequestURI()).thenReturn("/job/my-pipeline");
         when(request.getQueryString()).thenReturn(null);
 
-        String requestUrl = request.getRequestURL().toString();
+        String requestUri = request.getRequestURI();
         String queryString = request.getQueryString();
-        String relayState = requestUrl;
+        String relayState = requestUri;
         if (queryString != null && !queryString.isEmpty()) {
             relayState = relayState + "?" + queryString;
         }
 
-        assertEquals("Relay state should be URL only when no query string",
-                "http://localhost:8080/job/my-pipeline", relayState);
+        assertEquals("Relay state should be URI only when no query string",
+                "/job/my-pipeline", relayState);
     }
 
     // -----------------------------------------------------------------------
@@ -440,5 +438,54 @@ public class OmpassFilterTest {
                 filter.byPass2FA(mockUser, "/fonts/roboto.ttf", session));
         assertTrue("Should bypass .eot files",
                 filter.byPass2FA(mockUser, "/fonts/roboto.eot", session));
+    }
+
+    // -----------------------------------------------------------------------
+    // API token (Basic auth) bypass
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testBypassForBasicAuthRequest() {
+        setGlobal2faEnabled(true);
+
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("apiuser");
+        when(session.getAttribute("apiuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
+
+        HttpServletRequest apiRequest = mock(HttpServletRequest.class);
+        when(apiRequest.getHeader("Authorization")).thenReturn("Basic dXNlcjp0b2tlbg==");
+
+        assertTrue("Should bypass 2FA for requests with Basic auth header",
+                filter.byPass2FA(mockUser, "/job/build", session, apiRequest));
+    }
+
+    @Test
+    public void testNoBypassWithoutAuthHeader() {
+        setGlobal2faEnabled(true);
+
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("testuser");
+        when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
+
+        HttpServletRequest normalRequest = mock(HttpServletRequest.class);
+        when(normalRequest.getHeader("Authorization")).thenReturn(null);
+
+        assertFalse("Should NOT bypass without Authorization header",
+                filter.byPass2FA(mockUser, "/job/build", session, normalRequest));
+    }
+
+    @Test
+    public void testNoBypassForBearerAuth() {
+        setGlobal2faEnabled(true);
+
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("testuser");
+        when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
+
+        HttpServletRequest bearerRequest = mock(HttpServletRequest.class);
+        when(bearerRequest.getHeader("Authorization")).thenReturn("Bearer some-token");
+
+        assertFalse("Should NOT bypass for Bearer auth (only Basic is allowed)",
+                filter.byPass2FA(mockUser, "/job/build", session, bearerRequest));
     }
 }
