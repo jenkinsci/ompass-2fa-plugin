@@ -94,13 +94,22 @@ public class OmpassGlobalConfigView extends ManagementLink implements Describabl
         String serverUrl = req.getParameter("ompassServerUrl");
         String clientId = req.getParameter("clientId");
         String secretKeyParam = req.getParameter("secretKey");
-        String enableParam = req.getParameter("enableOmpass2fa");
+        String[] enableParams = req.getParameterValues("enableOmpass2fa");
         String language = req.getParameter("language");
 
         config.setOmpassServerUrl(serverUrl != null ? serverUrl : "");
         config.setClientId(clientId != null ? clientId : "");
         config.setSecretKey(Secret.fromString(secretKeyParam != null ? secretKeyParam : ""));
-        config.setEnableOmpass2fa("on".equals(enableParam) || "true".equals(enableParam));
+        boolean enabled = false;
+        if (enableParams != null) {
+            for (String v : enableParams) {
+                if ("on".equals(v) || "true".equals(v)) {
+                    enabled = true;
+                    break;
+                }
+            }
+        }
+        config.setEnableOmpass2fa(enabled);
         config.setLanguage(language != null ? language : "EN");
         config.save();
 

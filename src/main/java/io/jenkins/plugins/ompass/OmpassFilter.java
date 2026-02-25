@@ -47,7 +47,9 @@ public class OmpassFilter implements Filter {
             "/ajaxExecutors",
             "/descriptorByName",
             "/crumbIssuer",
-            "/theme"
+            "/theme",
+            "/i18n",
+            "/manage"
     );
 
     /**
@@ -86,11 +88,19 @@ public class OmpassFilter implements Filter {
     );
 
     /**
+     * Timestamp when the filter was registered. Sessions created before this
+     * time are exempt from 2FA to avoid disrupting users already logged in
+     * when the plugin is installed.
+     */
+    private static long filterRegisteredAt;
+
+    /**
      * Registers this filter with the Jenkins plugin servlet filter chain.
      * Called during Jenkins initialization after plugins are prepared.
      */
     @Initializer(after = InitMilestone.PLUGINS_PREPARED)
     public static void registerFilter() throws ServletException {
+        filterRegisteredAt = System.currentTimeMillis();
         LOGGER.info("Registering OMPASS 2FA servlet filter");
         PluginServletFilter.addFilter(new OmpassFilter());
     }
@@ -113,6 +123,13 @@ public class OmpassFilter implements Filter {
 
             if (byPass2FA(currentUser, requestUrl, session, httpRequest)) {
                 filterChain.doFilter(request, response);
+                return;
+            }
+
+            // AJAX/fetch requests should not be redirected (causes CORS errors).
+            // Return 403 so the browser handles it gracefully.
+            if (isAjaxRequest(httpRequest)) {
+                httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
 
@@ -173,7 +190,13 @@ public class OmpassFilter implements Filter {
             return true;
         }
 
-        // 5. API token (Basic auth) requests bypass 2FA
+        // 5. Sessions created before the filter was registered are exempt
+        //    (users already logged in when the plugin was installed/restarted)
+        if (session != null && session.getCreationTime() < filterRegisteredAt) {
+            return true;
+        }
+
+        // 6. API token (Basic auth) requests bypass 2FA
         if (request != null) {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Basic ")) {
@@ -233,6 +256,22 @@ public class OmpassFilter implements Filter {
             }
         }
 
+        return false;
+    }
+
+    /**
+     * Detects AJAX (XHR) and fetch requests that should not be redirected.
+     */
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        // XHR requests
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            return true;
+        }
+        // Fetch API requests (Sec-Fetch-Mode is "cors" or "same-origin" for fetch, "navigate" for page loads)
+        String fetchMode = request.getHeader("Sec-Fetch-Mode");
+        if (fetchMode != null && !"navigate".equals(fetchMode)) {
+            return true;
+        }
         return false;
     }
 

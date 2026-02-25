@@ -125,18 +125,18 @@ public class OmpassCallbackAction implements UnprotectedRootAction {
                     && config.getClientId().equals(verifyResponse.getClientId());
 
             if (verified) {
-                // Read relay state from the old session before invalidation
-                HttpSession oldSession = req.getSession(false);
+                HttpSession session = req.getSession(false);
                 String destination = null;
-                if (oldSession != null) {
-                    destination = (String) oldSession.getAttribute(RELAY_STATE_KEY);
-                    // Invalidate old session to prevent session fixation attacks
-                    oldSession.invalidate();
+                if (session != null) {
+                    destination = (String) session.getAttribute(RELAY_STATE_KEY);
+                    session.removeAttribute(RELAY_STATE_KEY);
+                    // Rotate session ID to prevent session fixation (preserves session data)
+                    req.changeSessionId();
+                } else {
+                    session = req.getSession(true);
                 }
 
-                // Create a fresh session and mark 2FA as verified
-                HttpSession newSession = req.getSession(true);
-                newSession.setAttribute(this.username + OMPASS_2FA_VERIFIED_SUFFIX, Boolean.TRUE);
+                session.setAttribute(this.username + OMPASS_2FA_VERIFIED_SUFFIX, Boolean.TRUE);
                 LOGGER.info("OMPASS 2FA verification succeeded for user: " + this.username);
 
                 // Validate redirect destination to prevent open redirect

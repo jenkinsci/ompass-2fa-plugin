@@ -64,8 +64,8 @@ public class OmpassGlobalConfig extends GlobalConfiguration {
         return secretKey;
     }
 
-    public Boolean isEnableOmpass2fa() {
-        return enableOmpass2fa != null ? enableOmpass2fa : Boolean.FALSE;
+    public boolean isEnableOmpass2fa() {
+        return enableOmpass2fa != null ? enableOmpass2fa : false;
     }
 
     public String getLanguage() {

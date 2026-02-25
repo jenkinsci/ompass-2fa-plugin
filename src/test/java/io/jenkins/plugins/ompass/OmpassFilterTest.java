@@ -50,6 +50,8 @@ public class OmpassFilterTest {
         when(request.getSession(true)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
         when(request.getContextPath()).thenReturn("");
+        // Session created after filter registration (requires 2FA)
+        when(session.getCreationTime()).thenReturn(System.currentTimeMillis());
 
         // Save and clear the system property so tests start from a known state
         savedBypassProperty = System.getProperty("ompass.2fa.bypass");
