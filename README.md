@@ -32,7 +32,7 @@ Before using this plugin, you need an OMPASS account with a configured applicati
 
 | Requirement     | Version          |
 |-----------------|------------------|
-| Jenkins         | 2.541.1 or later |
+| Jenkins         | 2.528.3 or later |
 | Java            | JDK 17 or later  |
 | OMPASS Server   | OMPASS interface server with a configured application (Client ID and Secret Key) |
 
@@ -185,7 +185,7 @@ With `-Dprefix=/`, it will be available at `http://localhost:8080/`.
 
 | Jenkins Version | Compatibility |
 |---|---|
-| 2.541.1 or later | Fully supported (jakarta.servlet) |
+| 2.528.3 or later | Fully supported (jakarta.servlet) |
 
 ## Project Structure
 
