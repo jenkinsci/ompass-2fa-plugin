@@ -1,18 +1,18 @@
 package io.jenkins.plugins.ompass;
 
 import hudson.model.User;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -23,10 +23,8 @@ import static org.mockito.Mockito.*;
  * OmpassGlobalConfig / Jenkins context) and pure Mockito mocks (for
  * servlet-layer behavior).
  */
+@WithJenkins
 public class OmpassFilterTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     private OmpassFilter filter;
     private HttpServletRequest request;
@@ -36,7 +34,7 @@ public class OmpassFilterTest {
 
     private String savedBypassProperty;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         filter = new OmpassFilter();
 
@@ -50,15 +48,18 @@ public class OmpassFilterTest {
         when(request.getSession(true)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
         when(request.getContextPath()).thenReturn("");
-        // Session created after filter registration (requires 2FA)
-        when(session.getCreationTime()).thenReturn(System.currentTimeMillis());
+        // Session created well after filter registration (requires 2FA).
+        // Use Long.MAX_VALUE because with @WithJenkins, Jenkins starts (and
+        // filterRegisteredAt is set) AFTER @BeforeEach, so
+        // System.currentTimeMillis() here would be earlier than filterRegisteredAt.
+        when(session.getCreationTime()).thenReturn(Long.MAX_VALUE);
 
         // Save and clear the system property so tests start from a known state
         savedBypassProperty = System.getProperty("ompass.2fa.bypass");
         System.clearProperty("ompass.2fa.bypass");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Restore the original system property value
         if (savedBypassProperty != null) {
@@ -77,7 +78,7 @@ public class OmpassFilterTest {
      */
     private void setGlobal2faEnabled(boolean enabled) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
-        assertNotNull("OmpassGlobalConfig must be available in JenkinsRule context", config);
+        assertNotNull(config, "OmpassGlobalConfig must be available in JenkinsRule context");
         config.setEnableOmpass2fa(enabled);
         config.save();
     }
@@ -87,14 +88,14 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassWhenDisabled() {
+    public void testBypassWhenDisabled(JenkinsRule j) {
         setGlobal2faEnabled(false);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
 
         boolean result = filter.byPass2FA(mockUser, "/some/page", session);
-        assertTrue("Filter should bypass when 2FA is globally disabled", result);
+        assertTrue(result, "Filter should bypass when 2FA is globally disabled");
     }
 
     // -----------------------------------------------------------------------
@@ -102,63 +103,63 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForStaticResources_css() {
+    public void testBypassForStaticResources_css(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass .css files",
-                filter.byPass2FA(mockUser, "/resources/style.css", session));
+        assertTrue(filter.byPass2FA(mockUser, "/resources/style.css", session),
+                "Should bypass .css files");
     }
 
     @Test
-    public void testBypassForStaticResources_js() {
+    public void testBypassForStaticResources_js(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass .js files",
-                filter.byPass2FA(mockUser, "/resources/app.js", session));
+        assertTrue(filter.byPass2FA(mockUser, "/resources/app.js", session),
+                "Should bypass .js files");
     }
 
     @Test
-    public void testBypassForStaticResources_adjuncts() {
+    public void testBypassForStaticResources_adjuncts(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /adjuncts/ URLs",
-                filter.byPass2FA(mockUser, "/adjuncts/some-hash/resource.js", session));
+        assertTrue(filter.byPass2FA(mockUser, "/adjuncts/some-hash/resource.js", session),
+                "Should bypass /adjuncts/ URLs");
     }
 
     @Test
-    public void testBypassForStaticResources_png() {
+    public void testBypassForStaticResources_png(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass .png files",
-                filter.byPass2FA(mockUser, "/images/logo.png", session));
+        assertTrue(filter.byPass2FA(mockUser, "/images/logo.png", session),
+                "Should bypass .png files");
     }
 
     @Test
-    public void testBypassForStaticResources_ico() {
+    public void testBypassForStaticResources_ico(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass .ico files",
-                filter.byPass2FA(mockUser, "/favicon.ico", session));
+        assertTrue(filter.byPass2FA(mockUser, "/favicon.ico", session),
+                "Should bypass .ico files");
     }
 
     // -----------------------------------------------------------------------
@@ -166,39 +167,39 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForPluginUrls_ompassAuth() {
+    public void testBypassForPluginUrls_ompassAuth(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /ompassAuth URL",
-                filter.byPass2FA(mockUser, "/ompassAuth/", session));
+        assertTrue(filter.byPass2FA(mockUser, "/ompassAuth/", session),
+                "Should bypass /ompassAuth URL");
     }
 
     @Test
-    public void testBypassForPluginUrls_ompassCallback() {
+    public void testBypassForPluginUrls_ompassCallback(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /ompassCallback URL",
-                filter.byPass2FA(mockUser, "/ompassCallback/verify", session));
+        assertTrue(filter.byPass2FA(mockUser, "/ompassCallback/verify", session),
+                "Should bypass /ompassCallback URL");
     }
 
     @Test
-    public void testBypassForPluginUrls_configPage() {
+    public void testBypassForManageUrl(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /ompass2fa-config URL",
-                filter.byPass2FA(mockUser, "/ompass2fa-config/", session));
+        assertTrue(filter.byPass2FA(mockUser, "/manage/configureSecurity", session),
+                "Should bypass /manage URL");
     }
 
     // -----------------------------------------------------------------------
@@ -206,11 +207,11 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForUnauthenticatedUser() {
+    public void testBypassForUnauthenticatedUser(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         boolean result = filter.byPass2FA(null, "/any/url", session);
-        assertTrue("Should bypass when user is null (unauthenticated)", result);
+        assertTrue(result, "Should bypass when user is null (unauthenticated)");
     }
 
     // -----------------------------------------------------------------------
@@ -218,7 +219,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassWhenAlreadyVerified() {
+    public void testBypassWhenAlreadyVerified(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
@@ -226,7 +227,7 @@ public class OmpassFilterTest {
         when(session.getAttribute("admin_OMPASS_2FA_VERIFIED")).thenReturn(Boolean.TRUE);
 
         boolean result = filter.byPass2FA(mockUser, "/manage", session);
-        assertTrue("Should bypass when session is already 2FA-verified", result);
+        assertTrue(result, "Should bypass when session is already 2FA-verified");
     }
 
     // -----------------------------------------------------------------------
@@ -234,7 +235,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testRedirectWhen2faRequired() {
+    public void testRedirectWhen2faRequired(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
@@ -242,7 +243,7 @@ public class OmpassFilterTest {
         when(session.getAttribute("regularuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
         boolean result = filter.byPass2FA(mockUser, "/job/my-pipeline", session);
-        assertFalse("Should NOT bypass for authenticated user without 2FA verification", result);
+        assertFalse(result, "Should NOT bypass for authenticated user without 2FA verification");
     }
 
     // -----------------------------------------------------------------------
@@ -250,7 +251,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testRelayStateConstruction() {
+    public void testRelayStateConstruction(JenkinsRule j) {
         // Verify the relay state mechanism constructs the correct relative URI from
         // request attributes. This tests the logic used by the filter's
         // doFilter method for building relay state strings.
@@ -265,12 +266,12 @@ public class OmpassFilterTest {
             relayState = relayState + "?" + queryString;
         }
 
-        assertEquals("Relay state should include URI and query string",
-                expectedRelayState, relayState);
+        assertEquals(expectedRelayState, relayState,
+                "Relay state should include URI and query string");
     }
 
     @Test
-    public void testRelayStateWithoutQueryString() {
+    public void testRelayStateWithoutQueryString(JenkinsRule j) {
         when(request.getRequestURI()).thenReturn("/job/my-pipeline");
         when(request.getQueryString()).thenReturn(null);
 
@@ -281,8 +282,8 @@ public class OmpassFilterTest {
             relayState = relayState + "?" + queryString;
         }
 
-        assertEquals("Relay state should be URI only when no query string",
-                "/job/my-pipeline", relayState);
+        assertEquals("/job/my-pipeline", relayState,
+                "Relay state should be URI only when no query string");
     }
 
     // -----------------------------------------------------------------------
@@ -290,7 +291,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassSystemProperty() {
+    public void testBypassSystemProperty(JenkinsRule j) {
         setGlobal2faEnabled(true);
         System.setProperty("ompass.2fa.bypass", "true");
 
@@ -299,11 +300,11 @@ public class OmpassFilterTest {
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
         boolean result = filter.byPass2FA(mockUser, "/job/critical-build", session);
-        assertTrue("Should bypass when ompass.2fa.bypass system property is set to true", result);
+        assertTrue(result, "Should bypass when ompass.2fa.bypass system property is set to true");
     }
 
     @Test
-    public void testNoBypassWhenSystemPropertyIsFalse() {
+    public void testNoBypassWhenSystemPropertyIsFalse(JenkinsRule j) {
         setGlobal2faEnabled(true);
         System.setProperty("ompass.2fa.bypass", "false");
 
@@ -312,7 +313,7 @@ public class OmpassFilterTest {
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
         boolean result = filter.byPass2FA(mockUser, "/job/my-build", session);
-        assertFalse("Should NOT bypass when ompass.2fa.bypass is false", result);
+        assertFalse(result, "Should NOT bypass when ompass.2fa.bypass is false");
     }
 
     // -----------------------------------------------------------------------
@@ -320,27 +321,27 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForApiEndpoint() {
+    public void testBypassForApiEndpoint(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /api/ endpoints",
-                filter.byPass2FA(mockUser, "/job/test/api/json", session));
+        assertTrue(filter.byPass2FA(mockUser, "/job/test/api/json", session),
+                "Should bypass /api/ endpoints");
     }
 
     @Test
-    public void testBypassForCliEndpoint() {
+    public void testBypassForCliEndpoint(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /cli endpoint",
-                filter.byPass2FA(mockUser, "/cli", session));
+        assertTrue(filter.byPass2FA(mockUser, "/cli", session),
+                "Should bypass /cli endpoint");
     }
 
     // -----------------------------------------------------------------------
@@ -348,27 +349,27 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForLoginUrl() {
+    public void testBypassForLoginUrl(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /login URL",
-                filter.byPass2FA(mockUser, "/login", session));
+        assertTrue(filter.byPass2FA(mockUser, "/login", session),
+                "Should bypass /login URL");
     }
 
     @Test
-    public void testBypassForLogoutUrl() {
+    public void testBypassForLogoutUrl(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass /logout URL",
-                filter.byPass2FA(mockUser, "/logout", session));
+        assertTrue(filter.byPass2FA(mockUser, "/logout", session),
+                "Should bypass /logout URL");
     }
 
     // -----------------------------------------------------------------------
@@ -376,7 +377,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForNullUrl() {
+    public void testBypassForNullUrl(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
@@ -385,7 +386,7 @@ public class OmpassFilterTest {
 
         // Null URL should not match any bypass rules, so 2FA should be required
         boolean result = filter.byPass2FA(mockUser, null, session);
-        assertFalse("Should require 2FA when URL is null (no bypass match)", result);
+        assertFalse(result, "Should require 2FA when URL is null (no bypass match)");
     }
 
     // -----------------------------------------------------------------------
@@ -393,7 +394,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testHandlesNullSession() {
+    public void testHandlesNullSession(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
@@ -401,7 +402,7 @@ public class OmpassFilterTest {
 
         // Null session means no verified flag -- should require 2FA
         boolean result = filter.byPass2FA(mockUser, "/job/build", null);
-        assertFalse("Should require 2FA when session is null and URL is not bypassed", result);
+        assertFalse(result, "Should require 2FA when session is null and URL is not bypassed");
     }
 
     // -----------------------------------------------------------------------
@@ -409,7 +410,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testDoFilterPassesThroughWhenDisabled() throws Exception {
+    public void testDoFilterPassesThroughWhenDisabled(JenkinsRule j) throws Exception {
         setGlobal2faEnabled(false);
 
         when(request.getRequestURI()).thenReturn("/some/page");
@@ -425,21 +426,21 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForFontFiles() {
+    public void testBypassForFontFiles(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        assertTrue("Should bypass .woff files",
-                filter.byPass2FA(mockUser, "/fonts/roboto.woff", session));
-        assertTrue("Should bypass .woff2 files",
-                filter.byPass2FA(mockUser, "/fonts/roboto.woff2", session));
-        assertTrue("Should bypass .ttf files",
-                filter.byPass2FA(mockUser, "/fonts/roboto.ttf", session));
-        assertTrue("Should bypass .eot files",
-                filter.byPass2FA(mockUser, "/fonts/roboto.eot", session));
+        assertTrue(filter.byPass2FA(mockUser, "/fonts/roboto.woff", session),
+                "Should bypass .woff files");
+        assertTrue(filter.byPass2FA(mockUser, "/fonts/roboto.woff2", session),
+                "Should bypass .woff2 files");
+        assertTrue(filter.byPass2FA(mockUser, "/fonts/roboto.ttf", session),
+                "Should bypass .ttf files");
+        assertTrue(filter.byPass2FA(mockUser, "/fonts/roboto.eot", session),
+                "Should bypass .eot files");
     }
 
     // -----------------------------------------------------------------------
@@ -447,7 +448,7 @@ public class OmpassFilterTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testBypassForBasicAuthRequest() {
+    public void testBypassForBasicAuthRequest(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
@@ -455,14 +456,15 @@ public class OmpassFilterTest {
         when(session.getAttribute("apiuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
         HttpServletRequest apiRequest = mock(HttpServletRequest.class);
-        when(apiRequest.getHeader("Authorization")).thenReturn("Basic dXNlcjp0b2tlbg==");
+        when(apiRequest.getAttribute("jenkins.security.BasicHeaderApiTokenAuthenticator"))
+                .thenReturn(Boolean.TRUE);
 
-        assertTrue("Should bypass 2FA for requests with Basic auth header",
-                filter.byPass2FA(mockUser, "/job/build", session, apiRequest));
+        assertTrue(filter.byPass2FA(mockUser, "/job/build", session, apiRequest),
+                "Should bypass 2FA for requests authenticated via API token");
     }
 
     @Test
-    public void testNoBypassWithoutAuthHeader() {
+    public void testNoBypassWithoutApiTokenAttribute(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
@@ -470,24 +472,25 @@ public class OmpassFilterTest {
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
         HttpServletRequest normalRequest = mock(HttpServletRequest.class);
-        when(normalRequest.getHeader("Authorization")).thenReturn(null);
+        // getAttribute returns null by default for mocks -- no stub needed
 
-        assertFalse("Should NOT bypass without Authorization header",
-                filter.byPass2FA(mockUser, "/job/build", session, normalRequest));
+        assertFalse(filter.byPass2FA(mockUser, "/job/build", session, normalRequest),
+                "Should NOT bypass without API token authenticator attribute");
     }
 
     @Test
-    public void testNoBypassForBearerAuth() {
+    public void testNoBypassForAuthHeaderWithoutAttribute(JenkinsRule j) {
         setGlobal2faEnabled(true);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("testuser");
         when(session.getAttribute("testuser_OMPASS_2FA_VERIFIED")).thenReturn(null);
 
-        HttpServletRequest bearerRequest = mock(HttpServletRequest.class);
-        when(bearerRequest.getHeader("Authorization")).thenReturn("Bearer some-token");
+        HttpServletRequest headerOnlyRequest = mock(HttpServletRequest.class);
+        when(headerOnlyRequest.getHeader("Authorization")).thenReturn("Basic dXNlcjp0b2tlbg==");
+        // No API token attribute set -- getAttribute returns null by default
 
-        assertFalse("Should NOT bypass for Bearer auth (only Basic is allowed)",
-                filter.byPass2FA(mockUser, "/job/build", session, bearerRequest));
+        assertFalse(filter.byPass2FA(mockUser, "/job/build", session, headerOnlyRequest),
+                "Should NOT bypass when Authorization header is present but API token attribute is missing");
     }
 }

@@ -1,36 +1,40 @@
 package io.jenkins.plugins.ompass;
 
-import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
-import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
-import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
-import org.junit.Rule;
-import org.junit.Test;
+import io.jenkins.plugins.casc.ConfigurationAsCode;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests that the OMPASS 2FA plugin can be configured via JCasC (Configuration as Code).
  */
+@WithJenkins
 public class ConfigurationAsCodeTest {
 
-    @Rule
-    public JenkinsConfiguredWithCodeRule j = new JenkinsConfiguredWithCodeRule();
+    private void applyJCascConfig() throws Exception {
+        String resource = getClass().getResource("configuration-as-code.yml").toExternalForm();
+        ConfigurationAsCode.get().configure(resource);
+    }
 
     @Test
-    @ConfiguredWithCode("configuration-as-code.yml")
-    public void testConfigurationImport() {
+    public void testConfigurationImport(JenkinsRule j) throws Exception {
+        applyJCascConfig();
+
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
-        assertNotNull("Config should be available", config);
-        assertTrue("2FA should be enabled", config.isEnableOmpass2fa());
+        assertNotNull(config, "Config should be available");
+        assertTrue(config.isEnableOmpass2fa(), "2FA should be enabled");
         assertEquals("https://ompass.example.com", config.getOmpassServerUrl());
         assertEquals("test-client-id", config.getClientId());
-        assertNotNull("Secret key should be set", config.getSecretKey());
+        assertNotNull(config.getSecretKey(), "Secret key should be set");
         assertEquals("EN", config.getLanguage());
     }
 
     @Test
-    @ConfiguredWithCode("configuration-as-code.yml")
-    public void testConfigurationExport() throws Exception {
+    public void testConfigurationExport(JenkinsRule j) throws Exception {
+        applyJCascConfig();
+
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull(config);
         // Verify round-trip: values loaded from YAML should be retrievable

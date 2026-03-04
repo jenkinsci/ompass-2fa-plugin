@@ -1,35 +1,33 @@
 package io.jenkins.plugins.ompass;
 
 import hudson.util.Secret;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for {@link OmpassGlobalConfig} persistence, default values,
  * and secret key encryption behavior.
  */
+@WithJenkins
 public class OmpassGlobalConfigTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     // -----------------------------------------------------------------------
     // Default values
     // -----------------------------------------------------------------------
 
     @Test
-    public void testDefaultValues() {
+    public void testDefaultValues(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
-        assertNotNull("Global config singleton must not be null", config);
+        assertNotNull(config, "Global config singleton must not be null");
 
-        assertFalse("enableOmpass2fa should default to false", config.isEnableOmpass2fa());
-        assertEquals("language should default to EN", "EN", config.getLanguage());
-        assertEquals("ompassServerUrl should default to empty string", "", config.getOmpassServerUrl());
-        assertEquals("clientId should default to empty string", "", config.getClientId());
-        assertNull("secretKey should default to null", config.getSecretKey());
+        assertFalse(config.isEnableOmpass2fa(), "enableOmpass2fa should default to false");
+        assertEquals("EN", config.getLanguage(), "language should default to EN");
+        assertEquals("", config.getOmpassServerUrl(), "ompassServerUrl should default to empty string");
+        assertEquals("", config.getClientId(), "clientId should default to empty string");
+        assertNull(config.getSecretKey(), "secretKey should default to null");
     }
 
     // -----------------------------------------------------------------------
@@ -37,7 +35,7 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testSaveAndLoad() {
+    public void testSaveAndLoad(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull(config);
 
@@ -54,9 +52,9 @@ public class OmpassGlobalConfigTest {
 
         assertEquals("https://ompass.example.com", reloaded.getOmpassServerUrl());
         assertEquals("test-client-id-123", reloaded.getClientId());
-        assertNotNull("secretKey should be loaded", reloaded.getSecretKey());
+        assertNotNull(reloaded.getSecretKey(), "secretKey should be loaded");
         assertEquals("super-secret-key", reloaded.getSecretKey().getPlainText());
-        assertTrue("enableOmpass2fa should be true after reload", reloaded.isEnableOmpass2fa());
+        assertTrue(reloaded.isEnableOmpass2fa(), "enableOmpass2fa should be true after reload");
         assertEquals("KR", reloaded.getLanguage());
     }
 
@@ -65,7 +63,7 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testSecretKeyEncryption() {
+    public void testSecretKeyEncryption(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull(config);
 
@@ -75,19 +73,19 @@ public class OmpassGlobalConfigTest {
 
         // Verify the getter returns a Secret object
         Secret retrieved = config.getSecretKey();
-        assertNotNull("Secret should not be null after being set", retrieved);
-        assertTrue("Secret should be an instance of hudson.util.Secret",
-                retrieved instanceof Secret);
+        assertNotNull(retrieved, "Secret should not be null after being set");
+        assertTrue(retrieved instanceof Secret,
+                "Secret should be an instance of hudson.util.Secret");
 
         // Verify the encrypted value is not stored as plain text
         String encryptedValue = retrieved.getEncryptedValue();
-        assertNotNull("Encrypted value should not be null", encryptedValue);
-        assertNotEquals("Encrypted value must differ from plain text",
-                plainTextSecret, encryptedValue);
+        assertNotNull(encryptedValue, "Encrypted value should not be null");
+        assertNotEquals(plainTextSecret, encryptedValue,
+                "Encrypted value must differ from plain text");
 
         // Verify the plain text can be recovered
-        assertEquals("Plain text should be recoverable from Secret",
-                plainTextSecret, retrieved.getPlainText());
+        assertEquals(plainTextSecret, retrieved.getPlainText(),
+                "Plain text should be recoverable from Secret");
     }
 
     // -----------------------------------------------------------------------
@@ -95,14 +93,14 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testGetSingleton() {
+    public void testGetSingleton(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
-        assertNotNull("OmpassGlobalConfig.get() must not return null inside a Jenkins context", config);
+        assertNotNull(config, "OmpassGlobalConfig.get() must not return null inside a Jenkins context");
 
         // Calling get() multiple times should return the same instance
         OmpassGlobalConfig sameConfig = OmpassGlobalConfig.get();
-        assertSame("Repeated calls to get() should return the same singleton",
-                config, sameConfig);
+        assertSame(config, sameConfig,
+                "Repeated calls to get() should return the same singleton");
     }
 
     // -----------------------------------------------------------------------
@@ -110,7 +108,7 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testNullSafeGetters() {
+    public void testNullSafeGetters(JenkinsRule j) {
         // Create a raw instance without loading any persisted state.
         // Internal fields will be null because nothing was ever set.
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
@@ -118,15 +116,14 @@ public class OmpassGlobalConfigTest {
 
         // The getters must never return null for String/Boolean fields
         // (secretKey is allowed to be null by design).
-        assertNotNull("getOmpassServerUrl must not return null", config.getOmpassServerUrl());
-        assertNotNull("getClientId must not return null", config.getClientId());
-        assertNotNull("isEnableOmpass2fa must not return null", config.isEnableOmpass2fa());
-        assertNotNull("getLanguage must not return null", config.getLanguage());
+        assertNotNull(config.getOmpassServerUrl(), "getOmpassServerUrl must not return null");
+        assertNotNull(config.getClientId(), "getClientId must not return null");
+        assertNotNull(config.getLanguage(), "getLanguage must not return null");
 
-        assertEquals("Default ompassServerUrl should be empty string", "", config.getOmpassServerUrl());
-        assertEquals("Default clientId should be empty string", "", config.getClientId());
-        assertFalse("Default enableOmpass2fa should be false", config.isEnableOmpass2fa());
-        assertEquals("Default language should be EN", "EN", config.getLanguage());
+        assertEquals("", config.getOmpassServerUrl(), "Default ompassServerUrl should be empty string");
+        assertEquals("", config.getClientId(), "Default clientId should be empty string");
+        assertFalse(config.isEnableOmpass2fa(), "Default enableOmpass2fa should be false");
+        assertEquals("EN", config.getLanguage(), "Default language should be EN");
     }
 
     // -----------------------------------------------------------------------
@@ -134,17 +131,18 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testSetterTriggersAutoPersist() {
+    public void testSetterTriggersAutoPersist(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull(config);
 
-        // Each setter calls save() internally via @DataBoundSetter pattern.
-        // Verify that after setting a value, a fresh load reflects it.
+        // @DataBoundSetter does not auto-save; save() must be called explicitly.
+        // In practice, configure(req, json) calls save() after binding all fields.
         config.setOmpassServerUrl("https://auto-persist-test.example.com");
+        config.save();
 
         OmpassGlobalConfig reloaded = new OmpassGlobalConfig();
-        assertEquals("Value should persist after setter call",
-                "https://auto-persist-test.example.com", reloaded.getOmpassServerUrl());
+        assertEquals("https://auto-persist-test.example.com", reloaded.getOmpassServerUrl(),
+                "Value should persist after explicit save");
     }
 
     // -----------------------------------------------------------------------
@@ -152,7 +150,7 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testOverwriteExistingValues() {
+    public void testOverwriteExistingValues(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull(config);
 
@@ -175,7 +173,7 @@ public class OmpassGlobalConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testEmptyStringValues() {
+    public void testEmptyStringValues(JenkinsRule j) {
         OmpassGlobalConfig config = OmpassGlobalConfig.get();
         assertNotNull(config);
 

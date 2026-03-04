@@ -57,8 +57,7 @@ public class OmpassFilter implements Filter {
      */
     private static final List<String> PLUGIN_BYPASS_URLS = Arrays.asList(
             "/ompassAuth",
-            "/ompassCallback",
-            "/ompass2fa-config"
+            "/ompassCallback"
     );
 
     /**
@@ -118,7 +117,11 @@ public class OmpassFilter implements Filter {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
             User currentUser = User.current();
-            String requestUrl = httpRequest.getPathInfo();
+            String requestUrl = httpRequest.getRequestURI();
+            String contextPath = httpRequest.getContextPath();
+            if (contextPath != null && !contextPath.isEmpty() && requestUrl.startsWith(contextPath)) {
+                requestUrl = requestUrl.substring(contextPath.length());
+            }
             HttpSession session = httpRequest.getSession(false);
 
             if (byPass2FA(currentUser, requestUrl, session, httpRequest)) {
@@ -146,7 +149,6 @@ public class OmpassFilter implements Filter {
             }
             session.setAttribute(RELAY_STATE_KEY, relayState);
 
-            String contextPath = httpRequest.getContextPath();
             httpResponse.sendRedirect(contextPath + "/ompassAuth/");
         } catch (Exception e) {
             // Fail-open: allow the request through if an error occurs during 2FA evaluation
@@ -196,15 +198,15 @@ public class OmpassFilter implements Filter {
             return true;
         }
 
-        // 6. API token (Basic auth) requests bypass 2FA
-        if (request != null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Basic ")) {
-                return true;
-            }
+        // 6. API token requests bypass 2FA
+        //    Jenkins sets this attribute when authentication is done via API token
+        //    (see jenkins.security.BasicHeaderApiTokenAuthenticator)
+        if (request != null
+                && request.getAttribute("jenkins.security.BasicHeaderApiTokenAuthenticator") != null) {
+            return true;
         }
 
-        // 6. System property for development/emergency bypass
+        // 7. System property for development/emergency bypass
         String bypassProperty = System.getProperty("ompass.2fa.bypass");
         if ("true".equalsIgnoreCase(bypassProperty)) {
             return true;

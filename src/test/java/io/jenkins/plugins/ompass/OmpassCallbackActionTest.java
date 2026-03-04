@@ -1,11 +1,11 @@
 package io.jenkins.plugins.ompass;
 
 import hudson.model.UnprotectedRootAction;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for {@link OmpassCallbackAction} URL mapping, display properties,
@@ -16,22 +16,20 @@ import static org.junit.Assert.*;
  * without external dependencies: URL name, display name, icon visibility,
  * and consistent registration with the filter's bypass URL list.
  */
+@WithJenkins
 public class OmpassCallbackActionTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     // -----------------------------------------------------------------------
     // URL name
     // -----------------------------------------------------------------------
 
     @Test
-    public void testUrlName() {
-        OmpassCallbackAction action = findCallbackAction();
-        assertNotNull("OmpassCallbackAction should be registered as an extension", action);
+    public void testUrlName(JenkinsRule j) {
+        OmpassCallbackAction action = findCallbackAction(j);
+        assertNotNull(action, "OmpassCallbackAction should be registered as an extension");
 
-        assertEquals("URL name should be 'ompassCallback'",
-                "ompassCallback", action.getUrlName());
+        assertEquals("ompassCallback", action.getUrlName(),
+                "URL name should be 'ompassCallback'");
     }
 
     // -----------------------------------------------------------------------
@@ -39,13 +37,13 @@ public class OmpassCallbackActionTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testDisplayName() {
-        OmpassCallbackAction action = findCallbackAction();
-        assertNotNull("OmpassCallbackAction should be registered", action);
+    public void testDisplayName(JenkinsRule j) {
+        OmpassCallbackAction action = findCallbackAction(j);
+        assertNotNull(action, "OmpassCallbackAction should be registered");
 
         String displayName = action.getDisplayName();
-        assertNotNull("Display name should not be null", displayName);
-        assertFalse("Display name should not be empty", displayName.isEmpty());
+        assertNotNull(displayName, "Display name should not be null");
+        assertFalse(displayName.isEmpty(), "Display name should not be empty");
     }
 
     // -----------------------------------------------------------------------
@@ -53,12 +51,12 @@ public class OmpassCallbackActionTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testIconFileName() {
-        OmpassCallbackAction action = findCallbackAction();
-        assertNotNull("OmpassCallbackAction should be registered", action);
+    public void testIconFileName(JenkinsRule j) {
+        OmpassCallbackAction action = findCallbackAction(j);
+        assertNotNull(action, "OmpassCallbackAction should be registered");
 
-        assertNull("Icon file name should be null so the action is hidden from the sidebar",
-                action.getIconFileName());
+        assertNull(action.getIconFileName(),
+                "Icon file name should be null so the action is hidden from the sidebar");
     }
 
     // -----------------------------------------------------------------------
@@ -66,12 +64,12 @@ public class OmpassCallbackActionTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testRegisteredAsExtension() {
-        OmpassCallbackAction action = findCallbackAction();
-        assertNotNull("OmpassCallbackAction must be registered as a Jenkins extension " +
-                "(annotated with @Extension and implementing UnprotectedRootAction)", action);
-        assertTrue("Should implement UnprotectedRootAction",
-                action instanceof UnprotectedRootAction);
+    public void testRegisteredAsExtension(JenkinsRule j) {
+        OmpassCallbackAction action = findCallbackAction(j);
+        assertNotNull(action, "OmpassCallbackAction must be registered as a Jenkins extension " +
+                "(annotated with @Extension and implementing UnprotectedRootAction)");
+        assertTrue(action instanceof UnprotectedRootAction,
+                "Should implement UnprotectedRootAction");
     }
 
     // -----------------------------------------------------------------------
@@ -79,8 +77,8 @@ public class OmpassCallbackActionTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testUrlNameMatchesFilterBypassList() {
-        OmpassCallbackAction action = findCallbackAction();
+    public void testUrlNameMatchesFilterBypassList(JenkinsRule j) {
+        OmpassCallbackAction action = findCallbackAction(j);
         assertNotNull(action);
 
         String callbackUrl = "/" + action.getUrlName();
@@ -103,7 +101,7 @@ public class OmpassCallbackActionTest {
                 .thenReturn(null);
 
         boolean bypassed = filter.byPass2FA(mockUser, callbackUrl + "/verify", mockSession);
-        assertTrue("Filter must bypass the callback URL to avoid redirect loops", bypassed);
+        assertTrue(bypassed, "Filter must bypass the callback URL to avoid redirect loops");
     }
 
     // -----------------------------------------------------------------------
@@ -111,7 +109,7 @@ public class OmpassCallbackActionTest {
     // -----------------------------------------------------------------------
 
     @Test
-    public void testAuthActionRegisteredAlongside() {
+    public void testAuthActionRegisteredAlongside(JenkinsRule j) {
         // Verify OmpassAuthAction is also registered, since the callback
         // depends on the auth flow initiating first.
         OmpassAuthAction authAction = null;
@@ -122,8 +120,8 @@ public class OmpassCallbackActionTest {
                 break;
             }
         }
-        assertNotNull("OmpassAuthAction should be registered alongside OmpassCallbackAction",
-                authAction);
+        assertNotNull(authAction,
+                "OmpassAuthAction should be registered alongside OmpassCallbackAction");
         assertEquals("ompassAuth", authAction.getUrlName());
     }
 
@@ -134,7 +132,7 @@ public class OmpassCallbackActionTest {
     /**
      * Finds the OmpassCallbackAction from the Jenkins extension registry.
      */
-    private OmpassCallbackAction findCallbackAction() {
+    private OmpassCallbackAction findCallbackAction(JenkinsRule j) {
         for (UnprotectedRootAction rootAction :
                 j.getInstance().getExtensionList(UnprotectedRootAction.class)) {
             if (rootAction instanceof OmpassCallbackAction) {
