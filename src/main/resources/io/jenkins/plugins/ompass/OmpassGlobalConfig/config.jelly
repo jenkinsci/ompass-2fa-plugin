@@ -3,6 +3,12 @@
          xmlns:f="/lib/form">
 
   <f:section title="OMPASS 2FA Authentication">
+    <f:block>
+      <div class="jenkins-form-description" style="padding:0.5em;border-left:3px solid #f0ad4e;background:#fcf8e3;color:#8a6d3b;margin-bottom:1em;">
+        <strong>Warning:</strong> Please disable any other authentication plugins before enabling OMPASS 2FA to avoid conflicts.
+      </div>
+    </f:block>
+
     <f:optionalBlock title="Enable OMPASS 2FA" field="enableOmpass2fa"
                      inline="true">
 
@@ -17,6 +23,8 @@
       <f:entry title="Secret Key" field="secretKey">
         <f:password />
       </f:entry>
+
+      <script src="${rootURL}/plugin/ompass-2fa/js/ompass-config.js"></script>
 
       <f:entry title="Language" field="language">
         <f:select />
