@@ -13,7 +13,7 @@
 
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>ompass-2fa</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>1.0.1</version>
     <packaging>hpi</packaging>
 
     <name>OMPASS 2FA Authentication</name>
@@ -36,8 +36,6 @@
     </scm>
 
     <properties>
-        <revision>1.0.0</revision>
-        <changelist>999999-SNAPSHOT</changelist>
         <jenkins.baseline>2.528</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
